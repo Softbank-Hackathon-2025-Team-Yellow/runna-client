@@ -134,6 +134,46 @@ src/
 - **Body**: System 폰트
 - **Code**: JetBrains Mono, Fira Code
 
+## 🚀 AWS Amplify 배포
+
+### GitHub를 통한 자동 배포
+
+1. **AWS Amplify Console 접속**
+   - [AWS Amplify Console](https://console.aws.amazon.com/amplify/) 접속
+   - "New app" → "Host web app" 클릭
+
+2. **GitHub 연결**
+   - "GitHub" 선택
+   - 저장소 권한 승인
+   - `runna-client` 저장소 선택
+   - 배포할 브랜치 선택 (예: `main`)
+
+3. **빌드 설정 확인**
+   - Amplify가 자동으로 `amplify.yml` 파일 감지
+   - 빌드 설정이 올바른지 확인
+
+4. **환경 변수 설정**
+   - "Environment variables" 섹션에서 추가:
+   ```
+   VITE_USE_MOCK_DATA=false
+   VITE_API_URL=https://your-api-url.com
+   ```
+
+5. **배포 시작**
+   - "Save and deploy" 클릭
+   - 자동으로 빌드 및 배포 시작
+
+### 배포 후 자동 업데이트
+
+- `main` 브랜치에 push하면 자동으로 재배포
+- PR 생성 시 프리뷰 환경 자동 생성 (선택사항)
+
+### 커스텀 도메인 설정
+
+1. Amplify Console에서 "Domain management" 선택
+2. "Add domain" 클릭
+3. 도메인 입력 및 DNS 설정 완료
+
 ## 🔧 개발 가이드
 
 ### Mock 데이터 사용
@@ -176,3 +216,58 @@ npm run lint
 ---
 
 Made with ❤️ by Yellow Team
+
+
+## 🔍 Amplify 배포 트러블슈팅
+
+### 배포가 실패하는 경우
+
+1. **빌드 로그 확인**
+   - Amplify Console에서 "Build logs" 확인
+   - 에러 메시지 확인
+
+2. **로컬에서 빌드 테스트**
+   ```bash
+   npm run build
+   ls -la dist/  # index.html이 있는지 확인
+   ```
+
+3. **일반적인 문제 해결**
+   
+   **문제**: `dist` 폴더가 비어있음
+   ```bash
+   # package.json의 build 스크립트 확인
+   "build": "tsc && vite build"
+   ```
+   
+   **문제**: 환경 변수 누락
+   - Amplify Console에서 환경 변수 설정 확인
+   - `.env.example` 파일 참고
+   
+   **문제**: Node 버전 불일치
+   - Amplify Console → Build settings → Build image settings
+   - Node.js 18.x 선택
+
+4. **빌드 설정 확인**
+   ```yaml
+   # amplify.yml 확인
+   artifacts:
+     baseDirectory: dist  # Vite의 기본 출력 디렉토리
+   ```
+
+5. **라우팅 문제 (404 에러)**
+   - `public/_redirects` 파일이 있는지 확인
+   - SPA 라우팅을 위한 리다이렉트 설정 필요
+
+### 빌드 성공 체크리스트
+- [ ] `npm run build` 로컬에서 성공
+- [ ] `dist/index.html` 파일 존재
+- [ ] 환경 변수 설정 완료
+- [ ] `amplify.yml` 파일 존재
+- [ ] `public/_redirects` 파일 존재
+
+### 배포 후 확인사항
+- [ ] 메인 페이지 로딩 확인
+- [ ] 라우팅 동작 확인 (새로고침 시 404 없음)
+- [ ] 환경 변수 적용 확인
+- [ ] API 연결 확인 (프로덕션 환경)
