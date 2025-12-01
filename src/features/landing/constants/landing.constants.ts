@@ -22,7 +22,7 @@ export const HERO_CONTENT: HeroContent = {
 }
 
 export const CTA_BUTTONS: { primary: CTAButton; secondary: CTAButton } = {
-  primary: { label: 'Run Function', href: '#run' },
+  primary: { label: 'Run Function', href: '/create' },
   secondary: { label: 'View Functions', href: '/gallery' },
 }
 

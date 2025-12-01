@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { ArrowLeft, Eye, Activity, Clock, Cpu, HardDrive, TrendingUp, CheckCircle, XCircle } from 'lucide-react'
+import { ArrowLeft, Eye, Activity, Clock, Cpu, HardDrive, TrendingUp, CheckCircle, XCircle, RefreshCw, Copy, Link } from 'lucide-react'
 import { LandingNavigation } from '../features/landing/components/LandingNavigation'
 import { 
   FunctionDetail, 
@@ -20,39 +20,52 @@ const FunctionDetailPage = () => {
   const [metrics, setMetrics] = useState<Metrics | null>(null)
   const [jobs, setJobs] = useState<Job[]>([])
   const [loading, setLoading] = useState(true)
+  const [copiedUrl, setCopiedUrl] = useState(false)
+
+  const fetchData = async () => {
+    setLoading(true)
+    try {
+      if (USE_MOCK_DATA) {
+        // Use mock data
+        await new Promise(resolve => setTimeout(resolve, 500)) // Simulate API delay
+        setFunctionDetail({ ...MOCK_FUNCTION_DETAIL, function_id: functionId || '1' })
+        setMetrics(MOCK_METRICS)
+        setJobs(MOCK_JOBS)
+      } else {
+        // TODO: Fetch from real API
+        // const response = await fetch(`/api/functions/${functionId}`)
+        // const data = await response.json()
+        // setFunctionDetail(data.function)
+        // setMetrics(data.metrics)
+        // setJobs(data.jobs)
+        
+        // For now, return empty data when not using mock
+        setFunctionDetail(null)
+        setMetrics(null)
+        setJobs([])
+      }
+    } catch (error) {
+      console.error('Failed to fetch function details:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true)
-      try {
-        if (USE_MOCK_DATA) {
-          // Use mock data
-          await new Promise(resolve => setTimeout(resolve, 500)) // Simulate API delay
-          setFunctionDetail({ ...MOCK_FUNCTION_DETAIL, function_id: functionId || '1' })
-          setMetrics(MOCK_METRICS)
-          setJobs(MOCK_JOBS)
-        } else {
-          // TODO: Fetch from real API
-          // const response = await fetch(`/api/functions/${functionId}`)
-          // const data = await response.json()
-          // setFunctionDetail(data.function)
-          // setMetrics(data.metrics)
-          // setJobs(data.jobs)
-          
-          // For now, return empty data when not using mock
-          setFunctionDetail(null)
-          setMetrics(null)
-          setJobs([])
-        }
-      } catch (error) {
-        console.error('Failed to fetch function details:', error)
-      } finally {
-        setLoading(false)
-      }
-    }
-
     fetchData()
   }, [functionId])
+
+  const handleRefresh = () => {
+    fetchData()
+  }
+
+  const handleCopyUrl = () => {
+    if (functionDetail?.url) {
+      navigator.clipboard.writeText(functionDetail.url)
+      setCopiedUrl(true)
+      setTimeout(() => setCopiedUrl(false), 2000)
+    }
+  }
 
   const getStatusColor = (status: Job['status']) => {
     switch (status) {
@@ -120,7 +133,7 @@ const FunctionDetailPage = () => {
                 <ArrowLeft className="w-4 h-4" />
                 <span className="text-sm font-normal">Back to Gallery</span>
               </button>
-              <div className="flex items-center gap-3 flex-wrap">
+              <div className="flex items-center gap-3 flex-wrap mb-3">
                 <h1 className="font-pixel text-3xl text-[#fece6d]">{functionDetail.name}</h1>
                 <span className={`px-3 py-1.5 rounded-lg text-xs font-medium border ${
                   functionDetail.runtime === 'nodejs' 
@@ -137,9 +150,32 @@ const FunctionDetailPage = () => {
                   {functionDetail.execution_type}
                 </span>
               </div>
+              
+              {/* Function URL */}
+              {functionDetail.url && (
+                <div className="flex items-center gap-2 p-3 rounded-lg border border-white/10 bg-white/5 max-w-fit">
+                  <Link className="w-4 h-4 text-primary flex-shrink-0" />
+                  <code className="text-xs text-white/80 font-mono">{functionDetail.url}</code>
+                  <button
+                    onClick={handleCopyUrl}
+                    className="p-1.5 rounded hover:bg-white/10 transition-colors"
+                    title="Copy URL"
+                  >
+                    <Copy className={`w-3.5 h-3.5 ${copiedUrl ? 'text-green-400' : 'text-white/60'}`} />
+                  </button>
+                </div>
+              )}
             </div>
             
             <div className="flex items-center gap-3">
+              <button
+                onClick={handleRefresh}
+                disabled={loading}
+                className="flex items-center gap-2 py-2.5 px-4 rounded-lg border border-white/10 bg-white/5 text-white text-sm font-normal hover:bg-white/10 hover:border-white/20 transition-all duration-300 disabled:opacity-50"
+              >
+                <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+                <span className="hidden sm:inline">Refresh</span>
+              </button>
               <button
                 onClick={() => navigate(`/edit/${functionId}`)}
                 className="flex items-center gap-2 py-2.5 px-5 rounded-lg bg-primary text-background-dark text-sm font-medium hover:brightness-110 hover:shadow-lg hover:shadow-primary/20 transition-all duration-300"

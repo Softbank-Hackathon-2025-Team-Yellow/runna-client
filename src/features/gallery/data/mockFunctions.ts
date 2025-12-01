@@ -7,6 +7,7 @@ export const MOCK_FUNCTIONS: FunctionItem[] = [
     language: 'Node.js',
     lastUpdated: '2 hours ago',
     status: 'succeeded',
+    executionType: 'sync',
   },
   {
     id: '2',
@@ -14,6 +15,7 @@ export const MOCK_FUNCTIONS: FunctionItem[] = [
     language: 'Python',
     lastUpdated: '1 day ago',
     status: 'pending',
+    executionType: 'async',
   },
   {
     id: '3',
@@ -21,6 +23,7 @@ export const MOCK_FUNCTIONS: FunctionItem[] = [
     language: 'Node.js',
     lastUpdated: '3 days ago',
     status: 'running',
+    executionType: 'sync',
   },
   {
     id: '4',
@@ -28,6 +31,7 @@ export const MOCK_FUNCTIONS: FunctionItem[] = [
     language: 'Python',
     lastUpdated: '5 days ago',
     status: 'failed',
+    executionType: 'async',
   },
   {
     id: '5',
@@ -35,6 +39,7 @@ export const MOCK_FUNCTIONS: FunctionItem[] = [
     language: 'Node.js',
     lastUpdated: '1 week ago',
     status: 'succeeded',
+    executionType: 'async',
   },
   {
     id: '6',
@@ -42,6 +47,7 @@ export const MOCK_FUNCTIONS: FunctionItem[] = [
     language: 'Python',
     lastUpdated: '2 weeks ago',
     status: 'succeeded',
+    executionType: 'async',
   },
   {
     id: '7',
@@ -49,6 +55,7 @@ export const MOCK_FUNCTIONS: FunctionItem[] = [
     language: 'Python',
     lastUpdated: '3 weeks ago',
     status: 'failed',
+    executionType: 'sync',
   },
   {
     id: '8',
@@ -56,5 +63,6 @@ export const MOCK_FUNCTIONS: FunctionItem[] = [
     language: 'Node.js',
     lastUpdated: '1 month ago',
     status: 'running',
+    executionType: 'async',
   },
 ]

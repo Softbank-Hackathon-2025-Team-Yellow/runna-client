@@ -93,11 +93,11 @@ export const FunctionCard: React.FC<FunctionCardProps> = ({ function_item }) => 
   return (
     <div
       onClick={handleClick}
-      className="group flex cursor-pointer flex-col gap-4 rounded-xl border border-white/10 bg-white/[.03] p-5 transition-all duration-300 hover:border-primary/50 hover:bg-white/5 hover:scale-[1.02] hover:shadow-lg hover:shadow-primary/10 h-[140px]"
+      className="group flex cursor-pointer flex-col rounded-xl border border-white/10 bg-white/[.03] p-5 transition-all duration-300 hover:border-primary/50 hover:bg-white/5 hover:scale-[1.02] hover:shadow-lg hover:shadow-primary/10 h-[150px]"
     >
       {/* Header with Title and Status */}
-      <div className="flex items-start justify-between gap-3">
-        <h3 className="text-base font-normal text-white group-hover:text-[#fece6d] transition-colors duration-300 flex-1 line-clamp-2 overflow-hidden">
+      <div className="flex items-start justify-between gap-3 min-h-[48px] mb-4">
+        <h3 className="text-base font-normal text-white group-hover:text-[#fece6d] transition-colors duration-300 flex-1 line-clamp-2 overflow-hidden" title={function_item.name}>
           {function_item.name}
         </h3>
         <div className={`flex items-center gap-1.5 ${statusConfig.bgColor} rounded-md px-2 py-1 text-xs flex-shrink-0 h-fit`}>
@@ -106,15 +106,27 @@ export const FunctionCard: React.FC<FunctionCardProps> = ({ function_item }) => 
         </div>
       </div>
 
+      {/* Spacer */}
+      <div className="flex-1"></div>
+
       {/* Language and Time Info */}
-      <div className="flex flex-col gap-3 text-xs mt-auto">
+      <div className="flex flex-col gap-3 text-xs">
         <div className="flex items-center gap-2">
           {languageConfig.icon}
           <span className={`font-normal ${languageConfig.color}`}>{function_item.language}</span>
         </div>
-        <div className="flex items-center gap-2 text-white/50">
-          <Clock className="w-4 h-4" />
-          <span className="font-normal">{function_item.lastUpdated}</span>
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2 text-white/50">
+            <Clock className="w-4 h-4" />
+            <span className="font-normal">{function_item.lastUpdated}</span>
+          </div>
+          <span className={`px-2 py-1 rounded text-xs font-medium ${
+            function_item.executionType === 'sync' 
+              ? 'bg-purple-400/10 text-purple-400' 
+              : 'bg-orange-400/10 text-orange-400'
+          }`}>
+            {function_item.executionType}
+          </span>
         </div>
       </div>
     </div>

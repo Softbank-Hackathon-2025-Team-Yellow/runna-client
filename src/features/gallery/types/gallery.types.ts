@@ -1,4 +1,5 @@
 export type FunctionStatus = 'succeeded' | 'pending' | 'running' | 'failed'
+export type ExecutionType = 'sync' | 'async'
 
 export interface FunctionItem {
   id: string
@@ -6,6 +7,7 @@ export interface FunctionItem {
   language: string
   lastUpdated: string
   status: FunctionStatus
+  executionType: ExecutionType
 }
 
 export interface GalleryContent {

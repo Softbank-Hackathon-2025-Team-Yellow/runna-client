@@ -4,6 +4,7 @@ export interface FunctionDetail {
   runtime: 'python' | 'nodejs'
   code: string
   execution_type: 'sync' | 'async'
+  url?: string
 }
 
 export interface Metrics {
@@ -30,7 +31,8 @@ export const MOCK_FUNCTION_DETAIL: FunctionDetail = {
   name: 'my-awesome-function',
   runtime: 'nodejs',
   code: 'function handler(event) { return event }',
-  execution_type: 'sync'
+  execution_type: 'sync',
+  url: 'https://api.runna.dev/functions/my-awesome-function'
 }
 
 export const MOCK_METRICS: Metrics = {
