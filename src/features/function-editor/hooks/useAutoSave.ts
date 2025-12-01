@@ -7,7 +7,7 @@ export const useAutoSave = (
 ) => {
   const [saving, setSaving] = useState(false)
   const [lastSaved, setLastSaved] = useState<Date | null>(null)
-  const timeoutRef = useRef<NodeJS.Timeout>()
+  const timeoutRef = useRef<ReturnType<typeof setTimeout>>()
   const previousDataRef = useRef<any>(null)
   const isFirstRender = useRef(true)
 

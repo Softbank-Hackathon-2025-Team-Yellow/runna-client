@@ -15,7 +15,7 @@ const CreateFunctionPage = () => {
   const navigate = useNavigate()
   const [name, setName] = useState('')
   const [runtime, setRuntime] = useState<Runtime>('Node.js')
-  const [executionMode, setExecutionMode] = useState<ExecutionMode>('sync')
+  const [, setExecutionMode] = useState<ExecutionMode>('sync')
   const [code, setCode] = useState(DEFAULT_NODEJS_CODE)
   const [functionUrl, setFunctionUrl] = useState<string | null>(null)
   const [deploying, setDeploying] = useState(false)
@@ -60,7 +60,7 @@ const CreateFunctionPage = () => {
     setTimeout(() => setRecentlySaved(false), 3000)
   }, [name, code, runtime])
 
-  const { saving: autoSaving, lastSaved } = useAutoSave(
+  const { saving: autoSaving } = useAutoSave(
     { name, code, runtime },
     handleAutoSave,
     2000
@@ -147,14 +147,6 @@ const CreateFunctionPage = () => {
     } else {
       alert('Please deploy the function first')
     }
-  }
-
-  const formatLastSaved = () => {
-    if (!lastSaved) return ''
-    const seconds = Math.floor((Date.now() - lastSaved.getTime()) / 1000)
-    if (seconds < 60) return `Saved ${seconds}s ago`
-    const minutes = Math.floor(seconds / 60)
-    return `Saved ${minutes}m ago`
   }
 
   return (
