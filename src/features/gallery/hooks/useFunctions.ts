@@ -26,8 +26,8 @@ const convertToGalleryFunction = (apiFunc: FunctionItem): any => {
     name: apiFunc.name,
     language: apiFunc.runtime === 'NODEJS' ? 'Node.js' : 'Python',
     lastUpdated: getRelativeTime(apiFunc.updated_at),
-    status: apiFunc.status || 'active',
-    executionType: apiFunc.execution_type,
+    status: apiFunc.status || 'pending',
+    knativeUrl: apiFunc.knative_url,
   }
 }
 

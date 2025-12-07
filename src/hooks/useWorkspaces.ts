@@ -13,19 +13,23 @@ export const useWorkspaces = () => {
       setLoading(true)
       setError(null)
       console.log('[useWorkspaces] Fetching workspaces...')
+      console.log('[useWorkspaces] Token:', localStorage.getItem('token') ? 'exists' : 'missing')
       
       const data = await api.workspaces.getWorkspaces()
       console.log('[useWorkspaces] Received data:', data)
       console.log('[useWorkspaces] Is array:', Array.isArray(data))
+      console.log('[useWorkspaces] Data length:', Array.isArray(data) ? data.length : 'N/A')
       
       if (isMountedRef.current) {
-        // Ensure data is an array
+        // Data should already be an array from the service
         const workspacesArray = Array.isArray(data) ? data : []
         console.log('[useWorkspaces] Setting workspaces:', workspacesArray)
+        console.log('[useWorkspaces] Workspaces count:', workspacesArray.length)
         setWorkspaces(workspacesArray)
       }
     } catch (err: any) {
       console.error('[useWorkspaces] Fetch error:', err)
+      console.error('[useWorkspaces] Error details:', JSON.stringify(err, null, 2))
       if (isMountedRef.current) {
         const errorMessage = err?.message || err?.detail?.[0]?.msg || 'Failed to fetch workspaces'
         setError(new Error(errorMessage))

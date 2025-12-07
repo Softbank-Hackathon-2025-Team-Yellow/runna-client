@@ -45,7 +45,7 @@ const FunctionDetailPage = () => {
   }
 
   const handleCopyUrl = () => {
-    const url = `https://runna-api.ajy720.me/functions/${functionId}/invoke`
+    const url = functionDetail?.knative_url || `https://runna-api.ajy720.me/functions/${functionId}`
     navigator.clipboard.writeText(url)
     setCopiedUrl(true)
     setTimeout(() => setCopiedUrl(false), 2000)
@@ -126,29 +126,35 @@ const FunctionDetailPage = () => {
                 }`}>
                   {functionDetail.runtime}
                 </span>
-                <span className={`px-3 py-1.5 rounded-lg text-xs font-medium border ${
-                  functionDetail.execution_type === 'SYNC' 
-                    ? 'bg-purple-400/10 text-purple-400 border-purple-400/30' 
-                    : 'bg-orange-400/10 text-orange-400 border-orange-400/30'
-                }`}>
-                  {functionDetail.execution_type}
-                </span>
+                {functionDetail.status && (
+                  <span className={`px-3 py-1.5 rounded-lg text-xs font-medium border ${
+                    functionDetail.status === 'deployed' 
+                      ? 'bg-green-400/10 text-green-400 border-green-400/30' 
+                      : functionDetail.status === 'pending'
+                      ? 'bg-yellow-400/10 text-yellow-400 border-yellow-400/30'
+                      : 'bg-white/10 text-white/60 border-white/30'
+                  }`}>
+                    {functionDetail.status}
+                  </span>
+                )}
               </div>
               
-              {/* Function URL */}
-              <div className="flex items-center gap-2 p-3 rounded-lg border border-white/10 bg-white/5 max-w-fit">
-                <Link className="w-4 h-4 text-primary flex-shrink-0" />
-                <code className="text-xs text-white/80 font-mono">
-                  {`https://runna-api.ajy720.me/functions/${functionId}/invoke`}
-                </code>
-                <button
-                  onClick={handleCopyUrl}
-                  className="p-1.5 rounded hover:bg-white/10 transition-colors"
-                  title="Copy URL"
-                >
-                  <Copy className={`w-3.5 h-3.5 ${copiedUrl ? 'text-green-400' : 'text-white/60'}`} />
-                </button>
-              </div>
+              {/* Knative URL */}
+              {functionDetail.knative_url && (
+                <div className="flex items-center gap-2 p-3 rounded-lg border border-white/10 bg-white/5 max-w-fit">
+                  <Link className="w-4 h-4 text-primary flex-shrink-0" />
+                  <code className="text-xs text-white/80 font-mono">
+                    {functionDetail.knative_url}
+                  </code>
+                  <button
+                    onClick={handleCopyUrl}
+                    className="p-1.5 rounded hover:bg-white/10 transition-colors"
+                    title="Copy URL"
+                  >
+                    <Copy className={`w-3.5 h-3.5 ${copiedUrl ? 'text-green-400' : 'text-white/60'}`} />
+                  </button>
+                </div>
+              )}
             </div>
             
             <div className="flex items-center gap-3">

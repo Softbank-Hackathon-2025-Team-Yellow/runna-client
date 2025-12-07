@@ -8,8 +8,8 @@ import type {
   FunctionCreate,
   FunctionUpdate,
   FunctionMetrics,
-  ExecutionResult,
-  InvokeFunctionRequest,
+  DeployRequest,
+  DeployResult,
   JobList,
 } from '../types'
 
@@ -42,21 +42,10 @@ export const functionService: IFunctionService = {
     await http.delete(`/functions/${functionId}`)
   },
 
-  async invokeFunction(functionId: string, payload?: InvokeFunctionRequest): Promise<ExecutionResult> {
-    const response = await http.post<ExecutionResult>(
-      `/functions/${functionId}/invoke`,
-      payload || {}
-    )
-    return response.data
-  },
-
-  async invokeFunctionWithWorkspaceAuth(
-    functionId: string,
-    payload?: InvokeFunctionRequest
-  ): Promise<ExecutionResult> {
-    const response = await http.post<ExecutionResult>(
-      `/functions/${functionId}/invoke/workspace`,
-      payload || {}
+  async deployFunction(functionId: string, deployRequest?: DeployRequest): Promise<DeployResult> {
+    const response = await http.post<DeployResult>(
+      `/functions/${functionId}/deploy`,
+      deployRequest || {}
     )
     return response.data
   },

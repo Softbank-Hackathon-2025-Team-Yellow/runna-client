@@ -1,6 +1,4 @@
-import type { ExecutionType } from '@/api/types'
-
-export type FunctionStatus = 'succeeded' | 'pending' | 'running' | 'failed'
+export type FunctionStatus = 'succeeded' | 'pending' | 'running' | 'failed' | 'deployed'
 
 export interface FunctionItem {
   id: string
@@ -8,7 +6,7 @@ export interface FunctionItem {
   language: string
   lastUpdated: string
   status: FunctionStatus
-  executionType: ExecutionType
+  knativeUrl?: string | null
 }
 
 export interface GalleryContent {

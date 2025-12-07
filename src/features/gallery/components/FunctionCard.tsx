@@ -1,8 +1,7 @@
 import React from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Clock, CheckCircle, AlertCircle, Loader, XCircle } from 'lucide-react'
+import { Clock, CheckCircle, AlertCircle, Loader, XCircle, Rocket } from 'lucide-react'
 import { FunctionItem, FunctionStatus } from '../types/gallery.types'
-import type { ExecutionType } from '@/api/types'
 
 interface FunctionCardProps {
   function_item: FunctionItem
@@ -16,6 +15,13 @@ const getStatusConfig = (status: FunctionStatus) => {
         color: 'text-green-400',
         bgColor: 'bg-green-400/10',
         label: 'Succeeded',
+      }
+    case 'deployed':
+      return {
+        icon: Rocket,
+        color: 'text-green-400',
+        bgColor: 'bg-green-400/10',
+        label: 'Deployed',
       }
     case 'pending':
       return {
@@ -116,18 +122,9 @@ export const FunctionCard: React.FC<FunctionCardProps> = ({ function_item }) => 
           {languageConfig.icon}
           <span className={`font-normal ${languageConfig.color}`}>{function_item.language}</span>
         </div>
-        <div className="flex items-center justify-between gap-2">
-          <div className="flex items-center gap-2 text-white/50">
-            <Clock className="w-4 h-4" />
-            <span className="font-normal">{function_item.lastUpdated}</span>
-          </div>
-          <span className={`px-2 py-1 rounded text-xs font-medium ${
-            (function_item.executionType as ExecutionType) === 'SYNC' 
-              ? 'bg-purple-400/10 text-purple-400' 
-              : 'bg-orange-400/10 text-orange-400'
-          }`}>
-            {function_item.executionType}
-          </span>
+        <div className="flex items-center gap-2 text-white/50">
+          <Clock className="w-4 h-4" />
+          <span className="font-normal">{function_item.lastUpdated}</span>
         </div>
       </div>
     </div>

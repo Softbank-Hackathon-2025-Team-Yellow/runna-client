@@ -27,13 +27,69 @@ const extractWorkspace = (data: any): Workspace => {
 
 // Helper function to extract workspaces array from various response formats
 const extractWorkspaces = (data: any): Workspace[] => {
-  console.log('[Workspaces API] Response data:', data)
+  console.log('[Workspaces API] Response data:', JSON.stringify(data, null, 2), 'Type:', typeof data)
+  
+  // Handle null/undefined
+  if (!data) {
+    console.log('[Workspaces API] Data is null/undefined, returning empty array')
+    return []
+  }
+  
+  // Direct array
   if (Array.isArray(data)) {
+    console.log('[Workspaces API] Data is array, length:', data.length)
     return data
   }
-  if (data && 'workspaces' in data && Array.isArray(data.workspaces)) {
+  
+  // Wrapped in 'workspaces' key
+  if ('workspaces' in data && Array.isArray(data.workspaces)) {
+    console.log('[Workspaces API] Data has workspaces key, length:', data.workspaces.length)
     return data.workspaces
   }
+  
+  // Wrapped in 'data' key (common pattern)
+  if ('data' in data && Array.isArray(data.data)) {
+    console.log('[Workspaces API] Data has data key, length:', data.data.length)
+    return data.data
+  }
+  
+  // Wrapped in 'items' key
+  if ('items' in data && Array.isArray(data.items)) {
+    console.log('[Workspaces API] Data has items key, length:', data.items.length)
+    return data.items
+  }
+  
+  // If data is an object (dictionary-like response with workspace IDs as keys)
+  // e.g., { "uuid-1": { id: "uuid-1", name: "ws1", ... }, "uuid-2": { ... } }
+  if (typeof data === 'object') {
+    const keys = Object.keys(data)
+    const values = Object.values(data)
+    
+    // Check if all values look like workspace objects
+    if (values.length > 0) {
+      const allWorkspaces = values.every((v: any) => 
+        v && typeof v === 'object' && 'id' in v && 'name' in v
+      )
+      if (allWorkspaces) {
+        console.log('[Workspaces API] Data is object with workspace values, length:', values.length)
+        return values as Workspace[]
+      }
+    }
+    
+    // Check if data itself is a single workspace object (edge case)
+    if ('id' in data && 'name' in data && 'created_at' in data) {
+      console.log('[Workspaces API] Data is a single workspace, wrapping in array')
+      return [data as Workspace]
+    }
+    
+    // Empty object case
+    if (keys.length === 0) {
+      console.log('[Workspaces API] Data is empty object, returning empty array')
+      return []
+    }
+  }
+  
+  console.log('[Workspaces API] Could not extract workspaces, returning empty array')
   return []
 }
 

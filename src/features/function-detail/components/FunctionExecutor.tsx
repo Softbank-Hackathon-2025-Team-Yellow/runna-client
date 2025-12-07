@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { api } from '@/api/services'
-import type { ExecutionResult } from '@/api/types'
-import { Play, CheckCircle, XCircle, Clock, Loader2 } from 'lucide-react'
+import type { DeployResult } from '@/api/types'
+import { Rocket, CheckCircle, XCircle, Link, Loader2 } from 'lucide-react'
 
 interface FunctionExecutorProps {
   functionId?: string
@@ -9,40 +9,29 @@ interface FunctionExecutorProps {
 }
 
 export const FunctionExecutor = ({ functionId, onExecutionComplete }: FunctionExecutorProps) => {
-  const [payload, setPayload] = useState('{}')
-  const [executing, setExecuting] = useState(false)
-  const [result, setResult] = useState<ExecutionResult | null>(null)
+  const [deploying, setDeploying] = useState(false)
+  const [result, setResult] = useState<DeployResult | null>(null)
   const [error, setError] = useState<string | null>(null)
 
-  const handleExecute = async () => {
+  const handleDeploy = async () => {
     if (!functionId) return
     
     try {
-      setExecuting(true)
+      setDeploying(true)
       setError(null)
       setResult(null)
 
-      // Parse payload
-      let parsedPayload = {}
-      if (payload.trim()) {
-        try {
-          parsedPayload = JSON.parse(payload)
-        } catch (e) {
-          throw new Error('Invalid JSON payload')
-        }
-      }
-
-      const executionResult = await api.functions.invokeFunction(functionId, parsedPayload)
-      setResult(executionResult)
+      const deployResult = await api.functions.deployFunction(functionId)
+      setResult(deployResult)
       
-      // Refresh data after execution
+      // Refresh data after deployment
       if (onExecutionComplete) {
         onExecutionComplete()
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to execute function')
+      setError(err instanceof Error ? err.message : 'Failed to deploy function')
     } finally {
-      setExecuting(false)
+      setDeploying(false)
     }
   }
 
@@ -51,36 +40,26 @@ export const FunctionExecutor = ({ functionId, onExecutionComplete }: FunctionEx
   return (
     <div className="mb-8">
       <div className="p-6 rounded-xl border border-white/10 bg-white/[0.02]">
-        <h2 className="text-xl font-normal text-white mb-4">Test Function</h2>
+        <h2 className="text-xl font-normal text-white mb-4">Deploy Function</h2>
         <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-white/70 mb-2">
-              Payload (JSON)
-            </label>
-            <textarea
-              rows={4}
-              className="w-full px-4 py-3 rounded-lg border border-white/10 bg-white/5 text-white font-mono text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50"
-              placeholder='{"key": "value"}'
-              value={payload}
-              onChange={(e) => setPayload(e.target.value)}
-              disabled={executing}
-            />
-          </div>
+          <p className="text-sm text-white/60">
+            Deploy this function to the K8s cluster. The deployment process will create a Knative service and return the URL.
+          </p>
           
           <button
-            onClick={handleExecute}
-            disabled={executing}
+            onClick={handleDeploy}
+            disabled={deploying}
             className="flex items-center gap-2 px-6 py-2.5 rounded-lg bg-primary text-background-dark text-sm font-medium hover:brightness-110 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {executing ? (
+            {deploying ? (
               <>
                 <Loader2 className="w-4 h-4 animate-spin" />
-                <span>Executing...</span>
+                <span>Deploying...</span>
               </>
             ) : (
               <>
-                <Play className="w-4 h-4" />
-                <span>Execute Function</span>
+                <Rocket className="w-4 h-4" />
+                <span>Deploy to K8s</span>
               </>
             )}
           </button>
@@ -95,42 +74,37 @@ export const FunctionExecutor = ({ functionId, onExecutionComplete }: FunctionEx
           {/* Result Display */}
           {result && (
             <div className="mt-4 p-4 rounded-lg border border-white/10 bg-white/5">
-              <h3 className="text-sm font-semibold text-white mb-3">Execution Result</h3>
+              <h3 className="text-sm font-semibold text-white mb-3">Deployment Result</h3>
               
               <div className="space-y-3">
                 {/* Status */}
                 <div className="flex items-center gap-2">
                   <span className="text-xs text-white/60">Status:</span>
                   <span className={`flex items-center gap-1.5 px-2 py-1 rounded text-xs ${
-                    result.status === 'success'
+                    result.status === 'SUCCESS'
                       ? 'bg-green-400/10 text-green-400'
-                      : result.status === 'error'
-                      ? 'bg-red-400/10 text-red-400'
-                      : result.status === 'running'
-                      ? 'bg-blue-400/10 text-blue-400'
-                      : 'bg-yellow-400/10 text-yellow-400'
+                      : 'bg-red-400/10 text-red-400'
                   }`}>
-                    {result.status === 'success' && <CheckCircle className="w-3 h-3" />}
-                    {result.status === 'error' && <XCircle className="w-3 h-3" />}
+                    {result.status === 'SUCCESS' && <CheckCircle className="w-3 h-3" />}
+                    {result.status === 'FAILED' && <XCircle className="w-3 h-3" />}
                     {result.status}
                   </span>
                 </div>
 
-                {/* Duration */}
-                {result.duration && (
+                {/* Knative URL */}
+                {result.knative_url && (
                   <div className="flex items-center gap-2">
-                    <Clock className="w-3 h-3 text-white/40" />
-                    <span className="text-xs text-white/60">Duration: {result.duration}ms</span>
+                    <Link className="w-3 h-3 text-primary" />
+                    <span className="text-xs text-white/60">URL:</span>
+                    <code className="text-xs text-primary font-mono">{result.knative_url}</code>
                   </div>
                 )}
 
-                {/* Output */}
-                {result.output && (
+                {/* Message */}
+                {result.message && (
                   <div>
-                    <span className="text-xs text-white/60 block mb-2">Output:</span>
-                    <pre className="bg-white/5 border border-white/10 rounded-lg p-3 text-xs overflow-x-auto text-white/80 font-mono">
-                      {JSON.stringify(result.output, null, 2)}
-                    </pre>
+                    <span className="text-xs text-white/60 block mb-2">Message:</span>
+                    <p className="text-sm text-white/80">{result.message}</p>
                   </div>
                 )}
 
@@ -139,7 +113,7 @@ export const FunctionExecutor = ({ functionId, onExecutionComplete }: FunctionEx
                   <div>
                     <span className="text-xs text-red-400 block mb-2">Error:</span>
                     <pre className="bg-red-500/10 border border-red-500/20 rounded-lg p-3 text-xs overflow-x-auto text-red-400 font-mono">
-                      {result.error}
+                      {result.error.message || JSON.stringify(result.error, null, 2)}
                     </pre>
                   </div>
                 )}

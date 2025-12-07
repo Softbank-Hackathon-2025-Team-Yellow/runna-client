@@ -7,11 +7,10 @@ import type {
   FunctionCreate,
   FunctionUpdate,
   FunctionMetrics,
-  ExecutionResult,
-  InvokeFunctionRequest,
+  DeployRequest,
+  DeployResult,
   JobList,
   Runtime,
-  ExecutionType,
 } from '../types'
 import { delay } from './utils'
 
@@ -20,9 +19,9 @@ const MOCK_FUNCTIONS: FunctionDetail[] = [
     id: '550e8400-e29b-41d4-a716-446655440001',
     name: 'Image Resizer',
     runtime: 'NODEJS' as Runtime,
-    execution_type: 'SYNC' as ExecutionType,
     workspace_id: '550e8400-e29b-41d4-a716-446655440000',
-    status: 'succeeded',
+    status: 'deployed',
+    knative_url: 'https://image-resizer.default.example.com',
     code: `exports.handler = async (event) => {
   const { width, height, imageUrl } = JSON.parse(event.body);
   return { statusCode: 200, body: JSON.stringify({ success: true }) };
@@ -34,7 +33,6 @@ const MOCK_FUNCTIONS: FunctionDetail[] = [
     id: '550e8400-e29b-41d4-a716-446655440002',
     name: 'Data Validator',
     runtime: 'PYTHON' as Runtime,
-    execution_type: 'ASYNC' as ExecutionType,
     workspace_id: '550e8400-e29b-41d4-a716-446655440000',
     status: 'pending',
     code: `def handler(event, context):
@@ -65,10 +63,9 @@ export const mockFunctionService: IFunctionService = {
       id: crypto.randomUUID(),
       name: data.name,
       runtime: data.runtime,
-      execution_type: data.execution_type,
       workspace_id: data.workspace_id,
       code: data.code,
-      status: 'active',
+      status: 'pending',
       endpoint: data.endpoint,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
@@ -87,7 +84,6 @@ export const mockFunctionService: IFunctionService = {
     if (data.name !== undefined && data.name !== null) func.name = data.name
     if (data.runtime !== undefined && data.runtime !== null) func.runtime = data.runtime
     if (data.code !== undefined && data.code !== null) func.code = data.code
-    if (data.execution_type !== undefined && data.execution_type !== null) func.execution_type = data.execution_type
     
     func.updated_at = new Date().toISOString()
     return func
@@ -102,29 +98,36 @@ export const mockFunctionService: IFunctionService = {
     MOCK_FUNCTIONS.splice(index, 1)
   },
 
-  async invokeFunction(functionId: string, payload?: InvokeFunctionRequest): Promise<ExecutionResult> {
-    await delay(800)
+  async deployFunction(functionId: string, deployRequest?: DeployRequest): Promise<DeployResult> {
+    await delay(2000) // Simulate deployment time
     const func = MOCK_FUNCTIONS.find((f) => f.id === functionId)
     if (!func) {
       throw new Error('Function not found')
     }
     
-    const isSuccess = Math.random() > 0.2
+    const isSuccess = Math.random() > 0.1
     
-    return {
-      job_id: crypto.randomUUID(),
-      status: isSuccess ? 'success' : 'error',
-      output: isSuccess ? { result: 'Function executed successfully', input: payload } : undefined,
-      error: isSuccess ? undefined : 'Execution failed: Mock error',
-      duration: Math.floor(Math.random() * 5000) + 100,
+    if (isSuccess) {
+      const knativeUrl = `https://${func.name.toLowerCase().replace(/\s+/g, '-')}.default.example.com`
+      func.status = 'deployed'
+      func.knative_url = knativeUrl
+      func.updated_at = new Date().toISOString()
+      
+      return {
+        status: 'SUCCESS',
+        knative_url: knativeUrl,
+        message: 'Function deployed successfully to K8s cluster',
+      }
+    } else {
+      return {
+        status: 'FAILED',
+        success: false,
+        error: {
+          code: 'DEPLOYMENT_FAILED',
+          message: 'Failed to deploy function to K8s cluster',
+        },
+      }
     }
-  },
-
-  async invokeFunctionWithWorkspaceAuth(
-    functionId: string,
-    payload?: InvokeFunctionRequest
-  ): Promise<ExecutionResult> {
-    return this.invokeFunction(functionId, payload)
   },
 
   async getJobs(functionId: string): Promise<JobList> {

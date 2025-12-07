@@ -15,8 +15,8 @@ import type {
   FunctionCreate,
   FunctionUpdate,
   FunctionMetrics,
-  ExecutionResult,
-  InvokeFunctionRequest,
+  DeployRequest,
+  DeployResult,
   Job,
   JobList,
 } from '../types'
@@ -44,8 +44,7 @@ export interface IFunctionService {
   createFunction(data: FunctionCreate): Promise<FunctionDetail>
   updateFunction(functionId: string, data: FunctionUpdate): Promise<FunctionDetail>
   deleteFunction(functionId: string): Promise<void>
-  invokeFunction(functionId: string, payload?: InvokeFunctionRequest): Promise<ExecutionResult>
-  invokeFunctionWithWorkspaceAuth(functionId: string, payload?: InvokeFunctionRequest): Promise<ExecutionResult>
+  deployFunction(functionId: string, deployRequest?: DeployRequest): Promise<DeployResult>
   getJobs(functionId: string): Promise<JobList>
   getMetrics(functionId: string): Promise<FunctionMetrics>
 }

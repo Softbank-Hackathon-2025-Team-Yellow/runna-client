@@ -118,30 +118,37 @@ const CreateFunctionPage = () => {
     setRecentlySaved(false) // Reset recently saved highlight when deploying
     
     try {
+      // First create the function
       const createdFunction = await api.functions.createFunction({ 
         name, 
         runtime: runtime === 'Node.js' ? 'NODEJS' : 'PYTHON',
         code, 
-        execution_type: 'SYNC', 
         workspace_id: workspaceId,
         ...(endpoint && { endpoint })
       })
       
-      // Set function URL from created function or construct it
-      const functionUrl = `https://runna-api.ajy720.me/functions/${createdFunction.id}/invoke`
-      setFunctionUrl(functionUrl)
+      // Then deploy it to K8s cluster
+      const deployResult = await api.functions.deployFunction(createdFunction.id)
       
-      // Update metrics
-      setMetrics(prev => ({
-        ...prev,
-        executionTime: Math.round(Math.random() * 500 + 100),
-        cpuUsage: Math.round(Math.random() * 50 + 10),
-        memoryUsage: Math.round(Math.random() * 100 + 50)
-      }))
-      
-      alert('Function deployed successfully!')
-    } catch (error) {
-      alert('Failed to deploy function')
+      if (deployResult.status === 'SUCCESS' && deployResult.knative_url) {
+        setFunctionUrl(deployResult.knative_url)
+        
+        // Update metrics
+        setMetrics(prev => ({
+          ...prev,
+          executionTime: Math.round(Math.random() * 500 + 100),
+          cpuUsage: Math.round(Math.random() * 50 + 10),
+          memoryUsage: Math.round(Math.random() * 100 + 50)
+        }))
+        
+        alert(`Function deployed successfully!\nKnative URL: ${deployResult.knative_url}`)
+      } else {
+        const errorMsg = deployResult.error?.message || deployResult.message || 'Deployment failed'
+        alert(`Deployment failed: ${errorMsg}`)
+      }
+    } catch (error: any) {
+      const errorMsg = error?.message || 'Failed to deploy function'
+      alert(errorMsg)
     } finally {
       setDeploying(false)
     }
