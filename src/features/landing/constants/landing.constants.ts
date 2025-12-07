@@ -22,8 +22,8 @@ export const HERO_CONTENT: HeroContent = {
 }
 
 export const CTA_BUTTONS: { primary: CTAButton; secondary: CTAButton } = {
-  primary: { label: 'Run Function', href: '/create' },
-  secondary: { label: 'View Functions', href: '/gallery' },
+  primary: { label: 'Get Started', href: '/login' },
+  secondary: { label: 'View Demo', href: '/gallery' },
 }
 
 export const FEATURES_CONTENT: FeaturesContent = {
@@ -36,22 +36,58 @@ export const FEATURES_CONTENT: FeaturesContent = {
 
 export const FEATURES: Feature[] = [
   {
-    id: 'sync-async',
-    title: 'Sync & Async Execution',
+    id: 'multi-tenancy',
+    title: 'Multi-Tenancy',
     description: {
-      ko: '즉시 실행되는 작업이든 장시간 실행되는 작업이든, 모든 실행 모델을 쉽게 처리할 수 있습니다.',
-      ja: '即座に実行されるタスクでも長時間実行されるタスクでも、あらゆる実行モデルを簡単に処理できます。',
+      ko: '각 함수별 리소스 환경을 완벽하게 격리하여 안전하고 독립적인 실행 환경을 제공합니다.',
+      ja: '各関数ごとにリソース環境を完全に分離し、安全で独立した実行環境を提供します。',
     },
-    icon: 'sync',
+    icon: 'layers',
   },
   {
-    id: 'autoscaling',
-    title: 'Knative Autoscaling',
+    id: 'instant-deploy',
+    title: 'Instant Deploy & Execution',
     description: {
-      ko: '리소스를 자동으로 조정하고 제로까지 스케일 다운하는 지능형 비용 효율적 스케일링의 이점을 누릴 수 있습니다.',
-      ja: 'リソースを自動的に調整し、ゼロまでスケールダウンする、インテリジェントでコスト効率の高いスケーリングの恩恵を受けられます。',
+      ko: '버튼 클릭과 함께 콜드스타트 없이 즉시 배포하고 실행할 수 있습니다. 수정도 즉각 반영됩니다.',
+      ja: 'ボタンクリックでコールドスタートなしに即座にデプロイして実行できます。修正も即座に反映されます。',
     },
-    icon: 'scale',
+    icon: 'zap',
+  },
+  {
+    id: 'flexible-traffic',
+    title: 'Flexible Traffic Handling',
+    description: {
+      ko: '자동 스케일러 알고리즘과 Request Concurrency 기반 스케일링으로 유연하게 트래픽을 처리합니다.',
+      ja: '自動スケーラーアルゴリズムとRequest Concurrencyベースのスケーリングで柔軟にトラフィックを処理します。',
+    },
+    icon: 'activity',
+  },
+  {
+    id: 'cost-optimization',
+    title: 'Zero-Scaling',
+    description: {
+      ko: '함수 호출이 없을 때는 제로 스케일링으로 비용을 절감합니다.',
+      ja: '関数呼び出しがない場合は、ゼロスケーリングでコストを削減します。',
+    },
+    icon: 'dollar-sign',
+  },
+  {
+    id: 'custom-routing',
+    title: 'Custom Routing',
+    description: {
+      ko: '워크스페이스 네임 기반 버추얼호스트와 함수별 커스텀 라우트를 제공합니다.',
+      ja: 'ワークスペース名ベースのバーチャルホストと関数ごとのカスタムルートを提供します。',
+    },
+    icon: 'route',
+  },
+  {
+    id: 'real-time-metrics',
+    title: 'Real-time Metrics',
+    description: {
+      ko: '현재 함수 상태 및 메트릭 정보를 실시간으로 확인할 수 있습니다.',
+      ja: '現在の関数状態とメトリクス情報をリアルタイムで確認できます。',
+    },
+    icon: 'bar-chart',
   },
 ]
 

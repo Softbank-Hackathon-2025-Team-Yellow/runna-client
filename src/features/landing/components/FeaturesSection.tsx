@@ -21,12 +21,12 @@ export const FeaturesSection: React.FC = () => {
       </div>
 
       {/* Feature Cards Grid */}
-      <div className="flex flex-col gap-6 max-w-3xl mx-auto w-full mt-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-7xl mx-auto w-full mt-4">
         {FEATURES.map((feature, index) => (
           <div
             key={feature.id}
             className="animate-fade-in-up"
-            style={{ animationDelay: `${index * 150}ms` }}
+            style={{ animationDelay: `${index * 100}ms` }}
           >
             <FeatureCard
               title={feature.title}

@@ -40,7 +40,7 @@ export const FunctionGrid: React.FC<FunctionGridProps> = ({ searchQuery, onRefre
   if (error) {
     return (
       <div className="flex items-center justify-center py-20">
-        <div className="text-red-400 text-base">Error: {error}</div>
+        <div className="text-red-400 text-base">Error: {error.message}</div>
       </div>
     )
   }

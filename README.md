@@ -71,12 +71,34 @@ npm install
 `.env` 파일을 생성하고 다음 변수를 설정하세요:
 
 ```env
-# Mock 데이터 사용 여부 (개발 중)
+# Mock 데이터 사용 여부
+# true: Mock 데이터 사용 (개발 환경)
+# false: 실제 API 사용 (프로덕션 환경)
 VITE_USE_MOCK_DATA=true
 
-# API 엔드포인트 (프로덕션)
+# API 엔드포인트 (VITE_USE_MOCK_DATA=false일 때 사용)
 VITE_API_URL=https://api.runna.dev
 ```
+
+#### Mock 데이터 vs 실제 API
+
+**개발 환경 (Mock 데이터)**
+```env
+VITE_USE_MOCK_DATA=true
+VITE_API_URL=
+```
+- 백엔드 없이 프론트엔드 개발 가능
+- 빠른 프로토타이핑 및 UI 테스트
+- Mock 데이터는 `src/api/mock/` 폴더에 위치
+
+**프로덕션 환경 (실제 API)**
+```env
+VITE_USE_MOCK_DATA=false
+VITE_API_URL=https://your-backend-api.com
+```
+- 실제 백엔드 API와 연동
+- 모든 CRUD 작업이 실제 데이터베이스에 반영
+- JWT 인증 토큰 자동 관리
 
 ### 개발 서버 실행
 
@@ -98,16 +120,86 @@ npm run build
 
 ```
 src/
-├── api/                    # API 클라이언트
+├── api/                    # API 레이어
+│   ├── types/             # TypeScript 타입 정의
+│   ├── services/          # 실제 API 서비스
+│   ├── mock/              # Mock 데이터 서비스
+│   └── http.ts            # Axios HTTP 클라이언트
 ├── features/              # 기능별 모듈
 │   ├── function-editor/   # 함수 편집기
 │   ├── function-detail/   # 함수 상세
 │   ├── function-logs/     # 로그 관리
 │   ├── gallery/          # 함수 갤러리
 │   └── landing/          # 랜딩 페이지
+├── hooks/                # 공통 React 훅
 ├── pages/                # 페이지 컴포넌트
+├── components/           # 공통 UI 컴포넌트
 ├── styles/               # 전역 스타일
 └── App.tsx              # 앱 진입점
+```
+
+## 🔌 API 연동
+
+### API 아키텍처
+
+프로젝트는 **서비스 레이어 패턴**을 사용하여 Mock 데이터와 실제 API를 쉽게 전환할 수 있습니다.
+
+```
+Components → Hooks → Service Factory → Mock/Real Services → API
+```
+
+### 서비스 구조
+
+```typescript
+// src/api/services/index.ts
+export const api = {
+  users: USE_MOCK_DATA ? mockUserService : userService,
+  workspaces: USE_MOCK_DATA ? mockWorkspaceService : workspaceService,
+  functions: USE_MOCK_DATA ? mockFunctionService : functionService,
+  jobs: USE_MOCK_DATA ? mockJobService : jobService,
+}
+```
+
+### 사용 예시
+
+```typescript
+// 컴포넌트에서 API 사용
+import { api } from '@/api/services'
+
+// 함수 목록 조회
+const functions = await api.functions.getFunctions()
+
+// 함수 생성
+const newFunction = await api.functions.createFunction({
+  name: 'My Function',
+  runtime: 'nodejs',
+  code: 'exports.handler = async () => {}',
+  execution_type: 'sync',
+  workspace_id: 'workspace-uuid'
+})
+
+// 함수 실행
+const result = await api.functions.invokeFunction(functionId, { key: 'value' })
+```
+
+### 인증
+
+JWT 토큰은 자동으로 관리됩니다:
+- 로그인 시 `localStorage`에 저장
+- 모든 API 요청에 자동으로 포함
+- 401 에러 시 자동으로 로그인 페이지로 리다이렉트
+
+### 에러 처리
+
+```typescript
+try {
+  const data = await api.functions.getFunction(id)
+} catch (error) {
+  // ApiError 타입으로 변환됨
+  console.error(error.message)  // 사용자 친화적 메시지
+  console.error(error.status)   // HTTP 상태 코드
+  console.error(error.detail)   // 상세 에러 정보
+}
 ```
 
 ## 🎯 주요 페이지
@@ -115,6 +207,10 @@ src/
 | 경로 | 설명 |
 |------|------|
 | `/` | 랜딩 페이지 |
+| `/login` | 로그인 |
+| `/register` | 회원가입 |
+| `/workspaces` | 워크스페이스 목록 |
+| `/workspaces/:id` | 워크스페이스 상세 |
 | `/gallery` | 함수 갤러리 (대시보드) |
 | `/create` | 새 함수 생성 |
 | `/edit/:id` | 함수 편집 |

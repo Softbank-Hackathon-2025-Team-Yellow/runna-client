@@ -1,5 +1,9 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import LandingPage from './pages/LandingPage'
+import { LoginPage } from './pages/LoginPage'
+import { RegisterPage } from './pages/RegisterPage'
+import { WorkspacesPage } from './pages/WorkspacesPage'
+import { WorkspaceDetailPage } from './pages/WorkspaceDetailPage'
 import FunctionGalleryPage from './pages/FunctionGalleryPage'
 import CreateFunctionPage from './pages/CreateFunctionPage'
 import FunctionDetailPage from './pages/FunctionDetailPage'
@@ -10,6 +14,10 @@ function App(): JSX.Element {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<LandingPage />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
+        <Route path="/workspaces" element={<WorkspacesPage />} />
+        <Route path="/workspaces/:workspaceId" element={<WorkspaceDetailPage />} />
         <Route path="/gallery" element={<FunctionGalleryPage />} />
         <Route path="/create" element={<CreateFunctionPage />} />
         <Route path="/functions/:functionId" element={<FunctionDetailPage />} />

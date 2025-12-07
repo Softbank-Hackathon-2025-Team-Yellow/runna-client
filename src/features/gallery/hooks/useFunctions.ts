@@ -1,41 +1,72 @@
-import { useState, useEffect, useCallback } from 'react'
-import { FunctionItem } from '../types/gallery.types'
-import { MOCK_FUNCTIONS } from '../data/mockFunctions'
+import { useState, useEffect, useCallback, useRef } from 'react'
+import { api } from '@/api/services'
+import type { FunctionItem } from '@/api/types'
 
-const USE_MOCK_DATA = import.meta.env.VITE_USE_MOCK_DATA === 'true'
+// Helper function to convert API FunctionItem to gallery FunctionItem
+const convertToGalleryFunction = (apiFunc: FunctionItem): any => {
+  const getRelativeTime = (dateString: string) => {
+    const date = new Date(dateString)
+    const now = new Date()
+    const diffMs = now.getTime() - date.getTime()
+    const diffMins = Math.floor(diffMs / 60000)
+    const diffHours = Math.floor(diffMs / 3600000)
+    const diffDays = Math.floor(diffMs / 86400000)
+    const diffWeeks = Math.floor(diffMs / 604800000)
+    const diffMonths = Math.floor(diffMs / 2592000000)
+
+    if (diffMins < 60) return `${diffMins} minutes ago`
+    if (diffHours < 24) return `${diffHours} hours ago`
+    if (diffDays < 7) return `${diffDays} days ago`
+    if (diffWeeks < 4) return `${diffWeeks} weeks ago`
+    return `${diffMonths} months ago`
+  }
+
+  return {
+    id: apiFunc.id,
+    name: apiFunc.name,
+    language: apiFunc.runtime === 'NODEJS' ? 'Node.js' : 'Python',
+    lastUpdated: getRelativeTime(apiFunc.updated_at),
+    status: apiFunc.status || 'active',
+    executionType: apiFunc.execution_type,
+  }
+}
 
 export const useFunctions = () => {
-  const [functions, setFunctions] = useState<FunctionItem[]>([])
+  const [functions, setFunctions] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const [error, setError] = useState<Error | null>(null)
+  const isMountedRef = useRef(true)
 
   const fetchFunctions = useCallback(async () => {
     try {
       setLoading(true)
       setError(null)
       
-      if (USE_MOCK_DATA) {
-        // Use mock data
-        await new Promise(resolve => setTimeout(resolve, 500)) // Simulate API delay
-        setFunctions(MOCK_FUNCTIONS)
-      } else {
-        // TODO: Fetch from real API
-        // const response = await fetch('/api/functions')
-        // const data = await response.json()
-        // setFunctions(data)
-        
-        // For now, return empty array when not using mock data
-        setFunctions([])
+      const data = await api.functions.getFunctions()
+      
+      // Only update state if component is still mounted
+      if (isMountedRef.current) {
+        const galleryFunctions = data.map(convertToGalleryFunction)
+        setFunctions(galleryFunctions)
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch functions')
+      if (isMountedRef.current) {
+        setError(err instanceof Error ? err : new Error('Failed to fetch functions'))
+      }
     } finally {
-      setLoading(false)
+      if (isMountedRef.current) {
+        setLoading(false)
+      }
     }
   }, [])
 
   useEffect(() => {
+    isMountedRef.current = true
     fetchFunctions()
+    
+    return () => {
+      isMountedRef.current = false
+    }
   }, [fetchFunctions])
 
   const refresh = useCallback(() => {

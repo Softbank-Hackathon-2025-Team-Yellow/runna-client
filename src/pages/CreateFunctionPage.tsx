@@ -1,21 +1,25 @@
 import { useState, useEffect, useCallback } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels'
-import { ArrowLeft, Save, Rocket, Maximize2, Minimize2, FileCode, Share2, Clock, ChevronDown } from 'lucide-react'
+import { ArrowLeft, Save, Rocket, Maximize2, Minimize2, FileCode, Share2, Clock } from 'lucide-react'
 import { LandingNavigation } from '../features/landing/components/LandingNavigation'
 import { CodeEditor } from '../features/function-editor/components/CodeEditor'
 import { FunctionTester } from '../features/function-editor/components/FunctionTester'
 import { FunctionMetrics } from '../features/function-editor/components/FunctionMetrics'
 import { TemplateSelector } from '../features/function-editor/components/TemplateSelector'
 import { useAutoSave } from '../features/function-editor/hooks/useAutoSave'
-import { Runtime, ExecutionMode } from '../features/function-editor/types/editor.types'
+import { Runtime } from '../features/function-editor/types/editor.types'
 import { DEFAULT_NODEJS_CODE, DEFAULT_PYTHON_CODE } from '../features/function-editor/constants/editor.constants'
+import { api } from '@/api/services'
 
 const CreateFunctionPage = () => {
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const workspaceId = searchParams.get('workspace_id') || ''
   const [name, setName] = useState('')
   const [runtime, setRuntime] = useState<Runtime>('Node.js')
-  const [, setExecutionMode] = useState<ExecutionMode>('sync')
+  const [endpoint, setEndpoint] = useState('')
+
   const [code, setCode] = useState(DEFAULT_NODEJS_CODE)
   const [functionUrl, setFunctionUrl] = useState<string | null>(null)
   const [deploying, setDeploying] = useState(false)
@@ -41,9 +45,10 @@ const CreateFunctionPage = () => {
     const hasChanges = 
       name !== lastSavedState.name ||
       code !== lastSavedState.code ||
-      runtime !== lastSavedState.runtime
+      runtime !== lastSavedState.runtime ||
+      endpoint !== (lastSavedState as any).endpoint
     setHasUnsavedChanges(hasChanges)
-  }, [name, code, runtime, lastSavedState])
+  }, [name, code, runtime, endpoint, lastSavedState])
 
   // Auto-save
   const handleAutoSave = useCallback(async () => {
@@ -52,13 +57,13 @@ const CreateFunctionPage = () => {
     await new Promise(resolve => setTimeout(resolve, 500))
     
     // Update last saved state
-    setLastSavedState({ name, code, runtime })
+    setLastSavedState({ name, code, runtime, endpoint } as any)
     setHasUnsavedChanges(false)
     setRecentlySaved(true)
     
     // Reset recently saved highlight after 3 seconds
     setTimeout(() => setRecentlySaved(false), 3000)
-  }, [name, code, runtime])
+  }, [name, code, runtime, endpoint])
 
   const { saving: autoSaving } = useAutoSave(
     { name, code, runtime },
@@ -98,22 +103,33 @@ const CreateFunctionPage = () => {
     }
   }
 
-  const handleDeploy = async (mode: ExecutionMode) => {
+  const handleDeploy = async () => {
     if (!name.trim()) {
       alert('Please enter a function name')
       return
     }
 
-    setExecutionMode(mode)
+    if (!workspaceId) {
+      alert('Please select a workspace first')
+      return
+    }
+
     setDeploying(true)
     setRecentlySaved(false) // Reset recently saved highlight when deploying
     
     try {
-      // TODO: Implement actual deploy API
-      await new Promise(resolve => setTimeout(resolve, 2000))
+      const createdFunction = await api.functions.createFunction({ 
+        name, 
+        runtime: runtime === 'Node.js' ? 'NODEJS' : 'PYTHON',
+        code, 
+        execution_type: 'SYNC', 
+        workspace_id: workspaceId,
+        ...(endpoint && { endpoint })
+      })
       
-      const mockUrl = `https://api.runna.dev/functions/${name.toLowerCase().replace(/\s+/g, '-')}`
-      setFunctionUrl(mockUrl)
+      // Set function URL from created function or construct it
+      const functionUrl = `https://runna-api.ajy720.me/functions/${createdFunction.id}/invoke`
+      setFunctionUrl(functionUrl)
       
       // Update metrics
       setMetrics(prev => ({
@@ -123,7 +139,7 @@ const CreateFunctionPage = () => {
         memoryUsage: Math.round(Math.random() * 100 + 50)
       }))
       
-      alert(`Function deployed successfully in ${mode} mode!`)
+      alert('Function deployed successfully!')
     } catch (error) {
       alert('Failed to deploy function')
     } finally {
@@ -169,9 +185,9 @@ const CreateFunctionPage = () => {
           {/* Header */}
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-4">
-              {!fullscreen && (
+              {!fullscreen && workspaceId && (
                 <button
-                  onClick={() => navigate('/gallery')}
+                  onClick={() => navigate(`/workspaces/${workspaceId}`)}
                   className="flex items-center gap-2 text-white/60 hover:text-primary transition-colors"
                 >
                   <ArrowLeft className="w-5 h-5" />
@@ -229,54 +245,19 @@ const CreateFunctionPage = () => {
                 )}
               </button>
               
-              {/* Deploy Button with Dropdown */}
-              <div className="relative group">
-                <button
-                  disabled={deploying}
-                  className={`flex items-center gap-2 py-2 px-4 rounded-lg text-sm font-medium transition-all duration-300 disabled:opacity-50 cursor-pointer ${
-                    recentlySaved
-                      ? 'bg-primary text-background-dark hover:brightness-110 shadow-lg shadow-primary/40 animate-gentle-glow'
-                      : 'bg-primary text-background-dark hover:brightness-110 hover:shadow-lg hover:shadow-primary/20'
-                  }`}
-                >
-                  <Rocket className="w-4 h-4" />
-                  <span>{deploying ? 'Deploying...' : 'Deploy'}</span>
-                  <ChevronDown className="w-3 h-3" />
-                </button>
-                
-                {/* Dropdown Menu */}
-                {!deploying && (
-                  <div className="absolute right-0 top-full mt-2 w-52 bg-background-dark/95 backdrop-blur-sm border border-white/10 rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 overflow-hidden">
-                    <div className="py-1">
-                      <button
-                        onClick={() => handleDeploy('sync')}
-                        className="w-full text-left px-4 py-3 text-sm transition-colors text-white/80 hover:bg-primary/10 hover:text-primary"
-                      >
-                        <div className="flex items-center gap-3">
-                          <Rocket className="w-4 h-4" />
-                          <div>
-                            <div className="font-medium">Deploy Sync</div>
-                            <div className="text-xs text-white/50 mt-0.5">Synchronous execution</div>
-                          </div>
-                        </div>
-                      </button>
-                      <div className="border-t border-white/5"></div>
-                      <button
-                        onClick={() => handleDeploy('async')}
-                        className="w-full text-left px-4 py-3 text-sm transition-colors text-white/80 hover:bg-primary/10 hover:text-primary"
-                      >
-                        <div className="flex items-center gap-3">
-                          <Rocket className="w-4 h-4" />
-                          <div>
-                            <div className="font-medium">Deploy Async</div>
-                            <div className="text-xs text-white/50 mt-0.5">Asynchronous execution</div>
-                          </div>
-                        </div>
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </div>
+              {/* Deploy Button */}
+              <button
+                onClick={handleDeploy}
+                disabled={deploying}
+                className={`flex items-center gap-2 py-2 px-4 rounded-lg text-sm font-medium transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed ${
+                  recentlySaved
+                    ? 'bg-primary text-background-dark hover:brightness-110 shadow-lg shadow-primary/40 animate-gentle-glow'
+                    : 'bg-primary text-background-dark hover:brightness-110 hover:shadow-lg hover:shadow-primary/20'
+                }`}
+              >
+                <Rocket className="w-4 h-4" />
+                <span>{deploying ? 'Deploying...' : 'Deploy'}</span>
+              </button>
               
               <button
                 onClick={() => setFullscreen(!fullscreen)}
@@ -294,13 +275,20 @@ const CreateFunctionPage = () => {
               {/* Left: Code Editor */}
               <Panel defaultSize={60} minSize={40}>
                 <div className="h-full flex flex-col gap-2">
-                  {/* Function Name Input and Controls */}
+                  {/* Function Name and Endpoint Inputs */}
                   <div className="flex items-center gap-3">
                     <input
                       type="text"
                       value={name}
                       onChange={(e) => setName(e.target.value)}
                       placeholder="Enter function name..."
+                      className="flex-1 px-4 py-2 rounded-lg border border-white/10 bg-white/5 text-white placeholder-white/50 text-sm focus:border-primary/50 focus:shadow-lg focus:shadow-primary/20 focus:outline-none transition-all duration-300"
+                    />
+                    <input
+                      type="text"
+                      value={endpoint}
+                      onChange={(e) => setEndpoint(e.target.value)}
+                      placeholder="Custom endpoint (optional)"
                       className="flex-1 px-4 py-2 rounded-lg border border-white/10 bg-white/5 text-white placeholder-white/50 text-sm focus:border-primary/50 focus:shadow-lg focus:shadow-primary/20 focus:outline-none transition-all duration-300"
                     />
                     

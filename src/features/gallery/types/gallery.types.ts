@@ -1,5 +1,6 @@
+import type { ExecutionType } from '@/api/types'
+
 export type FunctionStatus = 'succeeded' | 'pending' | 'running' | 'failed'
-export type ExecutionType = 'sync' | 'async'
 
 export interface FunctionItem {
   id: string

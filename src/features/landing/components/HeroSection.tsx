@@ -41,22 +41,13 @@ export const HeroSection = () => {
             </div>
           </div>
 
-          {/* CTA Buttons */}
-          <div className="flex-wrap gap-4 flex justify-center animate-fade-in-up mt-2" style={{ animationDelay: '400ms' }}>
-            {/* Primary CTA Button */}
+          {/* CTA Button */}
+          <div className="flex justify-center animate-fade-in-up mt-2" style={{ animationDelay: '400ms' }}>
             <a
               href={CTA_BUTTONS.primary.href}
-              className="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 sm:h-12 sm:px-5 bg-primary text-background-dark text-sm font-medium leading-normal tracking-[0.015em] sm:text-base sm:font-medium sm:leading-normal sm:tracking-[0.015em] hover:brightness-110 hover:scale-105 hover:shadow-lg hover:shadow-primary/50 transition-all duration-300"
+              className="flex min-w-[160px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-8 sm:h-14 sm:px-10 bg-primary text-background-dark text-base font-medium leading-normal tracking-[0.015em] sm:text-lg sm:font-medium sm:leading-normal sm:tracking-[0.015em] hover:brightness-110 hover:scale-105 hover:shadow-lg hover:shadow-primary/50 transition-all duration-300"
             >
               <span className="truncate">{CTA_BUTTONS.primary.label}</span>
-            </a>
-
-            {/* Secondary CTA Button */}
-            <a
-              href={CTA_BUTTONS.secondary.href}
-              className="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 sm:h-12 sm:px-5 bg-white/10 text-white text-sm font-medium leading-normal tracking-[0.015em] sm:text-base sm:font-medium sm:leading-normal sm:tracking-[0.015em] hover:bg-white/20 hover:scale-105 hover:border hover:border-primary/50 transition-all duration-300"
-            >
-              <span className="truncate">{CTA_BUTTONS.secondary.label}</span>
             </a>
           </div>
         </div>

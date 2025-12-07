@@ -1,49 +1,34 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { ArrowLeft, Eye, Activity, Clock, Cpu, HardDrive, TrendingUp, CheckCircle, XCircle, RefreshCw, Copy, Link } from 'lucide-react'
+import { ArrowLeft, Eye, Activity, Clock, CheckCircle, XCircle, RefreshCw, Copy, Link } from 'lucide-react'
 import { LandingNavigation } from '../features/landing/components/LandingNavigation'
-import { 
-  FunctionDetail, 
-  Metrics, 
-  Job, 
-  MOCK_FUNCTION_DETAIL, 
-  MOCK_METRICS, 
-  MOCK_JOBS 
-} from '../features/function-detail/data/mockFunctionDetail'
-
-const USE_MOCK_DATA = import.meta.env.VITE_USE_MOCK_DATA === 'true'
+import { FunctionExecutor } from '../features/function-detail/components/FunctionExecutor'
+import { api } from '@/api/services'
+import type { FunctionDetail, FunctionMetrics, Job } from '@/api/types'
 
 const FunctionDetailPage = () => {
   const navigate = useNavigate()
   const { functionId } = useParams<{ functionId: string }>()
   const [functionDetail, setFunctionDetail] = useState<FunctionDetail | null>(null)
-  const [metrics, setMetrics] = useState<Metrics | null>(null)
+  const [metrics, setMetrics] = useState<FunctionMetrics | null>(null)
   const [jobs, setJobs] = useState<Job[]>([])
   const [loading, setLoading] = useState(true)
   const [copiedUrl, setCopiedUrl] = useState(false)
 
   const fetchData = async () => {
+    if (!functionId) return
+    
     setLoading(true)
     try {
-      if (USE_MOCK_DATA) {
-        // Use mock data
-        await new Promise(resolve => setTimeout(resolve, 500)) // Simulate API delay
-        setFunctionDetail({ ...MOCK_FUNCTION_DETAIL, function_id: functionId || '1' })
-        setMetrics(MOCK_METRICS)
-        setJobs(MOCK_JOBS)
-      } else {
-        // TODO: Fetch from real API
-        // const response = await fetch(`/api/functions/${functionId}`)
-        // const data = await response.json()
-        // setFunctionDetail(data.function)
-        // setMetrics(data.metrics)
-        // setJobs(data.jobs)
-        
-        // For now, return empty data when not using mock
-        setFunctionDetail(null)
-        setMetrics(null)
-        setJobs([])
-      }
+      const [functionData, metricsData, jobsData] = await Promise.all([
+        api.functions.getFunction(functionId),
+        api.functions.getMetrics(functionId),
+        api.functions.getJobs(functionId)
+      ])
+      
+      setFunctionDetail(functionData)
+      setMetrics(metricsData)
+      setJobs(jobsData.jobs)
     } catch (error) {
       console.error('Failed to fetch function details:', error)
     } finally {
@@ -60,18 +45,17 @@ const FunctionDetailPage = () => {
   }
 
   const handleCopyUrl = () => {
-    if (functionDetail?.url) {
-      navigator.clipboard.writeText(functionDetail.url)
-      setCopiedUrl(true)
-      setTimeout(() => setCopiedUrl(false), 2000)
-    }
+    const url = `https://runna-api.ajy720.me/functions/${functionId}/invoke`
+    navigator.clipboard.writeText(url)
+    setCopiedUrl(true)
+    setTimeout(() => setCopiedUrl(false), 2000)
   }
 
   const getStatusColor = (status: Job['status']) => {
     switch (status) {
-      case 'succeeded':
+      case 'success':
         return 'text-green-400 bg-green-400/10 border-green-400/30'
-      case 'failed':
+      case 'error':
         return 'text-red-400 bg-red-400/10 border-red-400/30'
       case 'running':
         return 'text-blue-400 bg-blue-400/10 border-blue-400/30'
@@ -136,14 +120,14 @@ const FunctionDetailPage = () => {
               <div className="flex items-center gap-3 flex-wrap mb-3">
                 <h1 className="font-pixel text-3xl text-[#fece6d]">{functionDetail.name}</h1>
                 <span className={`px-3 py-1.5 rounded-lg text-xs font-medium border ${
-                  functionDetail.runtime === 'nodejs' 
+                  functionDetail.runtime === 'NODEJS' 
                     ? 'bg-green-400/10 text-green-400 border-green-400/30' 
                     : 'bg-blue-400/10 text-blue-400 border-blue-400/30'
                 }`}>
                   {functionDetail.runtime}
                 </span>
                 <span className={`px-3 py-1.5 rounded-lg text-xs font-medium border ${
-                  functionDetail.execution_type === 'sync' 
+                  functionDetail.execution_type === 'SYNC' 
                     ? 'bg-purple-400/10 text-purple-400 border-purple-400/30' 
                     : 'bg-orange-400/10 text-orange-400 border-orange-400/30'
                 }`}>
@@ -152,19 +136,19 @@ const FunctionDetailPage = () => {
               </div>
               
               {/* Function URL */}
-              {functionDetail.url && (
-                <div className="flex items-center gap-2 p-3 rounded-lg border border-white/10 bg-white/5 max-w-fit">
-                  <Link className="w-4 h-4 text-primary flex-shrink-0" />
-                  <code className="text-xs text-white/80 font-mono">{functionDetail.url}</code>
-                  <button
-                    onClick={handleCopyUrl}
-                    className="p-1.5 rounded hover:bg-white/10 transition-colors"
-                    title="Copy URL"
-                  >
-                    <Copy className={`w-3.5 h-3.5 ${copiedUrl ? 'text-green-400' : 'text-white/60'}`} />
-                  </button>
-                </div>
-              )}
+              <div className="flex items-center gap-2 p-3 rounded-lg border border-white/10 bg-white/5 max-w-fit">
+                <Link className="w-4 h-4 text-primary flex-shrink-0" />
+                <code className="text-xs text-white/80 font-mono">
+                  {`https://runna-api.ajy720.me/functions/${functionId}/invoke`}
+                </code>
+                <button
+                  onClick={handleCopyUrl}
+                  className="p-1.5 rounded hover:bg-white/10 transition-colors"
+                  title="Copy URL"
+                >
+                  <Copy className={`w-3.5 h-3.5 ${copiedUrl ? 'text-green-400' : 'text-white/60'}`} />
+                </button>
+              </div>
             </div>
             
             <div className="flex items-center gap-3">
@@ -189,106 +173,50 @@ const FunctionDetailPage = () => {
           {/* Metrics Overview */}
           {metrics && (
             <div className="mb-8">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-                {/* Total Invocations */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {/* Total Executions */}
                 <div className="group p-5 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 hover:border-primary/30 transition-all duration-300 cursor-pointer">
                   <div className="flex items-center gap-2 mb-3">
                     <div className="p-2 rounded-lg bg-primary/10 group-hover:bg-primary/20 transition-colors">
                       <Activity className="w-4 h-4 text-primary" />
                     </div>
-                    <span className="text-xs font-medium text-white/60">Total Invocations</span>
+                    <span className="text-xs font-medium text-white/60">Total Executions</span>
                   </div>
-                  <div className="text-3xl font-bold text-white">{metrics.invocations.total.toLocaleString()}</div>
+                  <div className="text-3xl font-bold text-white">{metrics.total_executions.toLocaleString()}</div>
                   <div className="mt-2 text-xs text-white/40">All time</div>
                 </div>
 
-                {/* Success Rate */}
+                {/* Success Count */}
                 <div className="group p-5 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 hover:border-green-400/30 transition-all duration-300 cursor-pointer">
                   <div className="flex items-center gap-2 mb-3">
                     <div className="p-2 rounded-lg bg-green-400/10 group-hover:bg-green-400/20 transition-colors">
-                      <TrendingUp className="w-4 h-4 text-green-400" />
+                      <CheckCircle className="w-4 h-4 text-green-400" />
                     </div>
-                    <span className="text-xs font-medium text-white/60">Success Rate</span>
+                    <span className="text-xs font-medium text-white/60">Successful</span>
                   </div>
-                  <div className="text-3xl font-bold text-green-400">{metrics.success_rate}%</div>
-                  <div className="mt-2 text-xs text-green-400/60">{metrics.invocations.successful} succeeded</div>
+                  <div className="text-3xl font-bold text-green-400">{metrics.success_count.toLocaleString()}</div>
+                  <div className="mt-2 text-xs text-green-400/60">
+                    {metrics.total_executions > 0 ? ((metrics.success_count / metrics.total_executions) * 100).toFixed(1) : 0}% success rate
+                  </div>
                 </div>
 
-                {/* Avg Execution Time */}
+                {/* Avg Duration */}
                 <div className="group p-5 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 hover:border-blue-400/30 transition-all duration-300 cursor-pointer">
                   <div className="flex items-center gap-2 mb-3">
                     <div className="p-2 rounded-lg bg-blue-400/10 group-hover:bg-blue-400/20 transition-colors">
                       <Clock className="w-4 h-4 text-blue-400" />
                     </div>
-                    <span className="text-xs font-medium text-white/60">Avg Time</span>
+                    <span className="text-xs font-medium text-white/60">Avg Duration</span>
                   </div>
-                  <div className="text-3xl font-bold text-white">{metrics.avg_execution_time}</div>
+                  <div className="text-3xl font-bold text-white">{metrics.avg_duration.toFixed(0)}ms</div>
                   <div className="mt-2 text-xs text-white/40">Per execution</div>
                 </div>
-
-                {/* CPU Usage */}
-                <div className="group p-5 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 hover:border-purple-400/30 transition-all duration-300 cursor-pointer">
-                  <div className="flex items-center gap-2 mb-3">
-                    <div className="p-2 rounded-lg bg-purple-400/10 group-hover:bg-purple-400/20 transition-colors">
-                      <Cpu className="w-4 h-4 text-purple-400" />
-                    </div>
-                    <span className="text-xs font-medium text-white/60">CPU Usage</span>
-                  </div>
-                  <div className="text-3xl font-bold text-white">{metrics.cpu_usage}</div>
-                  <div className="mt-2 text-xs text-white/40">Average</div>
-                </div>
-
-                {/* Memory Usage */}
-                <div className="group p-5 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 hover:border-orange-400/30 transition-all duration-300 cursor-pointer">
-                  <div className="flex items-center gap-2 mb-3">
-                    <div className="p-2 rounded-lg bg-orange-400/10 group-hover:bg-orange-400/20 transition-colors">
-                      <HardDrive className="w-4 h-4 text-orange-400" />
-                    </div>
-                    <span className="text-xs font-medium text-white/60">Memory Usage</span>
-                  </div>
-                  <div className="text-3xl font-bold text-white">{metrics.memory_usage}</div>
-                  <div className="mt-2 text-xs text-white/40">Average</div>
-                </div>
               </div>
             </div>
           )}
 
-          {/* Success/Failed Stats */}
-          {metrics && (
-            <div className="mb-8">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="p-6 rounded-xl border border-green-400/30 bg-green-400/5 hover:bg-green-400/10 transition-all duration-300">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="p-3 rounded-lg bg-green-400/20">
-                        <CheckCircle className="w-6 h-6 text-green-400" />
-                      </div>
-                      <div>
-                        <div className="text-sm font-medium text-white/80">Successful Executions</div>
-                        <div className="text-xs text-green-400/60 mt-1">{((metrics.invocations.successful / metrics.invocations.total) * 100).toFixed(1)}% of total</div>
-                      </div>
-                    </div>
-                    <span className="text-3xl font-bold text-green-400">{metrics.invocations.successful.toLocaleString()}</span>
-                  </div>
-                </div>
-
-                <div className="p-6 rounded-xl border border-red-400/30 bg-red-400/5 hover:bg-red-400/10 transition-all duration-300">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="p-3 rounded-lg bg-red-400/20">
-                        <XCircle className="w-6 h-6 text-red-400" />
-                      </div>
-                      <div>
-                        <div className="text-sm font-medium text-white/80">Failed Executions</div>
-                        <div className="text-xs text-red-400/60 mt-1">{((metrics.invocations.failed / metrics.invocations.total) * 100).toFixed(1)}% of total</div>
-                      </div>
-                    </div>
-                    <span className="text-3xl font-bold text-red-400">{metrics.invocations.failed.toLocaleString()}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
+          {/* Function Executor */}
+          <FunctionExecutor functionId={functionId} onExecutionComplete={fetchData} />
 
           {/* Execution Logs */}
           <div>
@@ -318,19 +246,21 @@ const FunctionDetailPage = () => {
                   <tbody className="divide-y divide-white/5">
                     {jobs.length > 0 ? (
                       jobs.map((job) => (
-                        <tr key={job.job_id} className="hover:bg-white/[0.03] transition-colors group">
-                          <td className="px-6 py-4 text-sm font-mono text-primary group-hover:text-primary/80">{job.job_id}</td>
+                        <tr key={job.id} className="hover:bg-white/[0.03] transition-colors group">
+                          <td className="px-6 py-4 text-sm font-mono text-primary group-hover:text-primary/80">{job.id}</td>
                           <td className="px-6 py-4">
                             <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border ${getStatusColor(job.status)}`}>
-                              {job.status === 'succeeded' && <CheckCircle className="w-3.5 h-3.5" />}
-                              {job.status === 'failed' && <XCircle className="w-3.5 h-3.5" />}
+                              {job.status === 'success' && <CheckCircle className="w-3.5 h-3.5" />}
+                              {job.status === 'error' && <XCircle className="w-3.5 h-3.5" />}
                               {job.status}
                             </span>
                           </td>
-                          <td className="px-6 py-4 text-sm text-white/60">{formatTimestamp(job.timestamp)}</td>
+                          <td className="px-6 py-4 text-sm text-white/60">{formatTimestamp(job.created_at)}</td>
                           <td className="px-6 py-4 text-sm text-white/60">
-                            {job.result ? (
-                              <code className="text-xs bg-white/10 px-3 py-1.5 rounded font-mono">{JSON.stringify(job.result).substring(0, 50)}...</code>
+                            {job.output ? (
+                              <code className="text-xs bg-white/10 px-3 py-1.5 rounded font-mono">{JSON.stringify(job.output).substring(0, 50)}...</code>
+                            ) : job.error ? (
+                              <code className="text-xs bg-red-500/10 px-3 py-1.5 rounded font-mono text-red-400">{job.error.substring(0, 50)}...</code>
                             ) : (
                               <span className="text-white/40 italic">No result</span>
                             )}

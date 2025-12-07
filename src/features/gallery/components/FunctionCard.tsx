@@ -2,6 +2,7 @@ import React from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Clock, CheckCircle, AlertCircle, Loader, XCircle } from 'lucide-react'
 import { FunctionItem, FunctionStatus } from '../types/gallery.types'
+import type { ExecutionType } from '@/api/types'
 
 interface FunctionCardProps {
   function_item: FunctionItem
@@ -121,7 +122,7 @@ export const FunctionCard: React.FC<FunctionCardProps> = ({ function_item }) => 
             <span className="font-normal">{function_item.lastUpdated}</span>
           </div>
           <span className={`px-2 py-1 rounded text-xs font-medium ${
-            function_item.executionType === 'sync' 
+            (function_item.executionType as ExecutionType) === 'SYNC' 
               ? 'bg-purple-400/10 text-purple-400' 
               : 'bg-orange-400/10 text-orange-400'
           }`}>
