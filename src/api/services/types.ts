@@ -33,7 +33,7 @@ export interface IWorkspaceService {
   createWorkspace(data: WorkspaceCreate): Promise<Workspace>
   updateWorkspace(workspaceId: string, data: WorkspaceUpdate): Promise<Workspace>
   deleteWorkspace(workspaceId: string): Promise<void>
-  generateAuthKey(workspaceId: string, expiresHours?: number): Promise<WorkspaceAuthKey>
+  getApiKey(workspaceId: string): Promise<WorkspaceAuthKey>
   getMetrics(workspaceId: string): Promise<WorkspaceMetrics>
   getFunctions(workspaceId: string): Promise<FunctionItem[]>
 }

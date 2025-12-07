@@ -70,9 +70,9 @@ export const WorkspaceDetailPage = () => {
     
     try {
       // Generate a new auth key (or get existing one from workspace data if available)
-      const authKeyData = await api.workspaces.generateAuthKey(workspaceId)
+      const authKeyData = await api.workspaces.getApiKey(workspaceId)
       
-      navigator.clipboard.writeText(authKeyData.key)
+      navigator.clipboard.writeText(authKeyData.api_key)
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
     } catch (err) {

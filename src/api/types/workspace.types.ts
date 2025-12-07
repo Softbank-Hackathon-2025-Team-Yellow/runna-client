@@ -17,9 +17,8 @@ export interface WorkspaceUpdate {
 }
 
 export interface WorkspaceAuthKey {
-  key: string
+  api_key: string
   workspace_id: string
-  expires_at: string
 }
 
 export interface WorkspaceMetrics {

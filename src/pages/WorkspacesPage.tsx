@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useWorkspaces } from '@/hooks/useWorkspaces'
 import { LandingNavigation } from '@/features/landing/components/LandingNavigation'
@@ -11,6 +11,10 @@ export const WorkspacesPage = () => {
   const [newWorkspaceName, setNewWorkspaceName] = useState('')
   const [creating, setCreating] = useState(false)
   const [createError, setCreateError] = useState<string | null>(null)
+
+  useEffect(() => {
+    console.log(workspaces)
+  }, [workspaces])
 
   // Debug logging
   console.log('[WorkspacesPage] State:', { workspaces, loading, error })

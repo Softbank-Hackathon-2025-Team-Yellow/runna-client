@@ -1,9 +1,9 @@
 // Common API response and error types
 
 export interface ApiResponse<T> {
-  data: T
-  message?: string
-  status: number
+  success: boolean
+  data?: T
+  error?: any
 }
 
 export interface ApiError {

@@ -106,18 +106,18 @@ export const mockWorkspaceService: IWorkspaceService = {
     MOCK_WORKSPACES.splice(index, 1)
   },
 
-  async generateAuthKey(workspaceId: string, expiresHours: number = 24): Promise<WorkspaceAuthKey> {
+  async getApiKey(
+		workspaceId: string,
+	): Promise<WorkspaceAuthKey> {
+
     await delay(300)
-    const workspace = MOCK_WORKSPACES.find((w) => w.id === workspaceId)
-    if (!workspace) {
-      throw new Error('Workspace not found')
-    }
+
     return {
-      key: `ws_key_${Math.random().toString(36).substring(7)}`,
       workspace_id: workspaceId,
-      expires_at: new Date(Date.now() + expiresHours * 60 * 60 * 1000).toISOString(),
+      api_key: "sample_api_key"
     }
-  },
+	},
+
 
   async getMetrics(workspaceId: string): Promise<WorkspaceMetrics> {
     await delay(400)
@@ -185,105 +185,87 @@ export const mockWorkspaceService: IWorkspaceService = {
     const functionsMap: Record<string, FunctionItem[]> = {
       '550e8400-e29b-41d4-a716-446655440000': [
         {
-          id: 1,
+          id: "1",
           name: 'Image Resizer',
-          runtime: 'nodejs',
-          execution_type: 'sync',
+          runtime: 'PYTHON',
           workspace_id: workspaceId,
           status: 'succeeded',
-          description: 'Resize images on the fly',
           created_at: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
           updated_at: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
         },
         {
-          id: 2,
+          id: "2",
           name: 'Data Validator',
-          runtime: 'python',
-          execution_type: 'async',
+          runtime: 'PYTHON',
           workspace_id: workspaceId,
           status: 'succeeded',
-          description: 'Validate incoming data',
           created_at: new Date(Date.now() - 25 * 24 * 60 * 60 * 1000).toISOString(),
           updated_at: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
         },
         {
-          id: 3,
+          id: "3",
           name: 'Auth Token Generator',
-          runtime: 'nodejs',
-          execution_type: 'sync',
+          runtime: 'PYTHON',
           workspace_id: workspaceId,
           status: 'running',
-          description: 'Generate JWT tokens',
           created_at: new Date(Date.now() - 20 * 24 * 60 * 60 * 1000).toISOString(),
           updated_at: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
         },
         {
-          id: 4,
+          id: "4",
           name: 'PDF Report Creator',
-          runtime: 'python',
-          execution_type: 'async',
+          runtime: 'PYTHON',
           workspace_id: workspaceId,
           status: 'succeeded',
-          description: 'Generate PDF reports',
           created_at: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString(),
           updated_at: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
         },
       ],
       '550e8400-e29b-41d4-a716-446655440001': [
         {
-          id: 5,
+          id: "5",
           name: 'Webhook Processor',
-          runtime: 'nodejs',
-          execution_type: 'async',
+          runtime: 'PYTHON',
           workspace_id: workspaceId,
           status: 'succeeded',
-          description: 'Process incoming webhooks',
           created_at: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
           updated_at: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
         },
         {
-          id: 6,
+          id: "6",
           name: 'Email Notifier',
-          runtime: 'python',
-          execution_type: 'async',
+          runtime: 'PYTHON',
           workspace_id: workspaceId,
           status: 'pending',
-          description: 'Send email notifications',
           created_at: new Date(Date.now() - 8 * 24 * 60 * 60 * 1000).toISOString(),
           updated_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
         },
         {
-          id: 7,
+          id: "7",
           name: 'DB Query Executor',
-          runtime: 'python',
-          execution_type: 'sync',
+          runtime: 'PYTHON',
           workspace_id: workspaceId,
           status: 'failed',
-          description: 'Execute database queries',
           created_at: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
           updated_at: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
         },
       ],
       '550e8400-e29b-41d4-a716-446655440002': [
         {
-          id: 8,
+          id: "8",
           name: 'Cache Manager',
-          runtime: 'nodejs',
-          execution_type: 'sync',
+          runtime: 'PYTHON',
           workspace_id: workspaceId,
           status: 'succeeded',
-          description: 'Manage Redis cache',
           created_at: new Date(Date.now() - 12 * 24 * 60 * 60 * 1000).toISOString(),
           updated_at: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString(),
         },
         {
-          id: 9,
+          id: "9",
           name: 'File Uploader',
-          runtime: 'nodejs',
-          execution_type: 'async',
+          runtime: 'PYTHON',
           workspace_id: workspaceId,
           status: 'running',
-          description: 'Upload files to S3',
           created_at: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
           updated_at: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
         },
